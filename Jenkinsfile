@@ -4,17 +4,36 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                bat 'mvn clean package'   // Use 'sh' for Linux/Mac
+                script {
+                    sh 'mvn clean package'  // Adjust this based on your build tool
+                }
             }
         }
+
         stage('Test') {
             steps {
-                bat 'mvn test'
+                script {
+                    sh 'mvn test'  // Run tests before deployment
+                }
             }
         }
+
         stage('Deploy') {
             steps {
-                bat 'echo Deploying Application...'
+                script {
+                    echo "Deploying application..."
+
+                    // Stop existing service (if running)
+                    sh 'pkill -f myapp.jar || true' 
+
+                    // Copy JAR/WAR to the deployment location
+                    sh 'cp target/myapp.jar /home/youruser/app/'
+
+                    // Start the application (adjust port if needed)
+                    sh 'nohup java -jar /home/youruser/app/myapp.jar > /home/youruser/app/app.log 2>&1 &'
+                    
+                    echo "Application deployed successfully!"
+                }
             }
         }
     }
