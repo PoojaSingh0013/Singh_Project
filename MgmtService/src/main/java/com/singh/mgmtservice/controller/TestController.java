@@ -12,4 +12,9 @@ public class TestController {
     public String test(){
         return "PoojaRaniAshok";
     }
+
+    @GetMapping("/get-hello")
+    public String testHello(){
+        return "PoojaRaniAshok JAVA WORLD";
+    }
 }
