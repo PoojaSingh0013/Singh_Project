@@ -5,7 +5,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    sh 'mvn clean package'  // Adjust this based on your build tool
+                    bat 'mvn clean package'  // Use 'bat' instead of 'sh' for Windows
                 }
             }
         }
@@ -13,7 +13,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'mvn test'  // Run tests before deployment
+                    bat 'mvn test'
                 }
             }
         }
@@ -22,15 +22,15 @@ pipeline {
             steps {
                 script {
                     echo "Deploying application..."
-
-                    // Stop existing service (if running)
-                    sh 'pkill -f myapp.jar || true' 
-
-                    // Copy JAR/WAR to the deployment location
-                    sh 'cp target/myapp.jar /home/youruser/app/'
-
-                    // Start the application (adjust port if needed)
-                    sh 'nohup java -jar /home/youruser/app/myapp.jar > /home/youruser/app/app.log 2>&1 &'
+                    
+                    // Stop the running application (if exists)
+                    bat 'taskkill /F /IM java.exe || echo No existing process'
+                    
+                    // Copy JAR file to deployment location
+                    bat 'copy target\\myapp.jar C:\\Deploy\\myapp.jar'
+                    
+                    // Start the application in the background
+                    bat 'start /B java -jar C:\\Deploy\\myapp.jar > C:\\Deploy\\app.log 2>&1'
                     
                     echo "Application deployed successfully!"
                 }
