@@ -10,17 +10,26 @@ pipeline {
                     
                     echo "Listing files in workspace after checkout:"
                     bat 'dir'  // Windows
-                    // sh 'ls -la' // Use this if running on Linux
+                    // sh 'ls -la' // Linux
                 }
             }
         }
 
-        stage('Validate POM') {
+        stage('Find and Validate POM') {
             steps {
                 script {
-                    def pomExists = fileExists('pom.xml')
-                    if (!pomExists) {
-                        error("❌ pom.xml not found in workspace! Make sure the repository has a valid Maven project.")
+                    def modules = ['ApiGateway', 'EurekaServer', 'MgmtService', 'UserInterface']
+                    def pomFound = false
+                    for (module in modules) {
+                        if (fileExists("${module}/pom.xml")) {
+                            echo "✅ Found pom.xml in ${module}"
+                            pomFound = true
+                            env.BUILD_DIR = module
+                            break
+                        }
+                    }
+                    if (!pomFound) {
+                        error("❌ No pom.xml found! Ensure the repository has a valid Maven project.")
                     }
                 }
             }
@@ -29,8 +38,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    echo "Building the project using Maven..."
-                    bat 'mvn clean package'
+                    echo "Building project inside ${env.BUILD_DIR}..."
+                    bat "cd ${env.BUILD_DIR} && mvn clean package"
                 }
             }
         }
@@ -39,7 +48,7 @@ pipeline {
             steps {
                 script {
                     echo "Running tests..."
-                    bat 'mvn test'
+                    bat "cd ${env.BUILD_DIR} && mvn test"
                 }
             }
         }
@@ -48,7 +57,7 @@ pipeline {
             steps {
                 script {
                     echo "Deploying application..."
-                    // Add your deployment command here
+                    // Add deployment logic
                 }
             }
         }
